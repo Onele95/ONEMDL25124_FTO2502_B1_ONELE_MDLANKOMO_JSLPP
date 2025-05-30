@@ -1,48 +1,23 @@
-// scripts.js
+// src/app.js
 
-import { fetchTasks, createTask, updateTask, deleteTask } from './apiHandler.js';
-
-// Global array to hold current tasks, populated from the API
-let tasks = [];
-
-// Global variable to store the task currently being viewed/edited in the modal
-let currentTaskInModal = null; // THIS IS CRUCIAL!
-
-// --- DOM Element References for Task Detail Modal (Declared once globally for efficiency) ---
-const taskDetailModal = document.getElementById("task-modal");
-const closeTaskDetailModalBtn = document.getElementById("close-task-modal-btn");
-const taskDetailTitleInput = document.getElementById("task-detail-title");
-const taskDetailDescInput = document.getElementById("task-detail-desc");
-const taskDetailStatusSelect = document.getElementById("task-detail-status");
-const editTaskBtn = document.getElementById("edit-task-btn");
-const saveTaskBtn = document.getElementById("save-task-btn");
-
-
-
-// --- DOM Element References for Add New Task Modal ---
-const addTaskBtn = document.getElementById('add-task-btn');
-const addTaskModal = document.getElementById('add-task-modal');
-const closeAddTaskModalBtn = document.getElementById('close-add-task-modal-btn');
-const addTaskForm = document.getElementById('add-task-form');
-// createNewTaskBtn is likely the form's submit button, so a direct const might not be strictly needed
-// const createNewTaskBtn = document.getElementById('create-task-btn');
+import { getTasks, createTask, updateTask, deleteTask } from './apiHandler.js'; // Import your API functions
 
 /**
  * Creates a single task DOM element.
  * @param {Object} task - Task data object.
+ * @param {string} task.title - Title of the task.
+ * @param {string} task.id - Unique task ID.
+ * @param {string} task.status - Status column: 'todo', 'doing', or 'done'.
  * @returns {HTMLElement} The created task div element.
  */
 function createTaskElement(task) {
   const taskDiv = document.createElement("div");
   taskDiv.className = "task-div";
-  taskDiv.innerHTML = `
-        <h3>${task.title}</h3>
-        <p>${task.description ? task.description.substring(0, 50) + (task.description.length > 50 ? '...' : '') : 'No description'}</p>
-    `;
-  taskDiv.dataset.taskId = task.id; // Store ID for later retrieval (from API)
+  taskDiv.textContent = task.title;
+  taskDiv.dataset.taskId = task.id;
 
   taskDiv.addEventListener("click", () => {
-    openTaskDetailModal(task);
+    openTaskModal(task);
   });
 
   return taskDiv;
@@ -68,365 +43,304 @@ function clearExistingTasks() {
 }
 
 /**
- * Renders all tasks from the 'tasks' array (global) to the UI.
+ * Renders all tasks from the provided array to the UI.
  * Groups tasks by status and appends them to their respective columns.
- * Also updates the task counts in column headers.
+ * @param {Array<Object>} tasks - Array of task objects.
  */
-function renderTasks() {
-    clearExistingTasks(); // Always clear existing tasks before re-rendering
-
-    // Calculate counts for each status
-    const todoCount = tasks.filter(task => task.status === 'todo').length;
-    const doingCount = tasks.filter(task => task.status === 'doing').length;
-    const doneCount = tasks.filter(task => task.status === 'done').length;
-
-    // Update column header texts with current counts
-    const todoHeader = document.getElementById('toDoText');
-    const doingHeader = document.getElementById('doingText');
-    const doneHeader = document.getElementById('doneText');
-
-    if (todoHeader) todoHeader.textContent = `TODO (${todoCount})`;
-    if (doingHeader) doingHeader.textContent = `DOING (${doingCount})`;
-    if (doneHeader) doneHeader.textContent = `DONE (${doneCount})`;
-
-    // Append tasks to their respective containers
-    tasks.forEach((task) => {
-        const container = getTaskContainerByStatus(task.status);
-        if (container) {
-            const taskElement = createTaskElement(task);
-            container.appendChild(taskElement);
-        }
-    });
-}
-
-/**
- * Enables or disables editing fields in the task detail modal.
- * Also toggles visibility of Edit/Save buttons.
- * @param {boolean} enable - True to enable editing, false to disable.
- */
-function toggleEditMode(enable) {
-    // Use the globally defined DOM element references (taskDetailTitleInput, etc.)
-    taskDetailTitleInput.readOnly = !enable;
-    taskDetailDescInput.readOnly = !enable;
-    taskDetailStatusSelect.disabled = !enable;
-
-    if (enable) {
-        editTaskBtn.style.display = 'none'; // Hide Edit
-        saveTaskBtn.style.display = 'inline-block'; // Show Save
-    } else {
-        editTaskBtn.style.display = 'inline-block'; // Show Edit
-        saveTaskBtn.style.display = 'none'; // Hide Save
+function renderTasks(tasks) {
+  clearExistingTasks(); // Clear existing tasks before rendering new ones
+  tasks.forEach((task) => {
+    const container = getTaskContainerByStatus(task.status);
+    if (container) {
+      const taskElement = createTaskElement(task);
+      container.appendChild(taskElement);
     }
+  });
 }
 
 /**
- * Opens the task detail modal dialog with pre-filled task details.
+ * Opens the modal dialog with pre-filled task details.
  * @param {Object} task - The task object to display in the modal.
  */
-function openTaskDetailModal(task) {
-  currentTaskInModal = task; // Store the task that was clicked
+function openTaskModal(task) {
+  const modal = document.getElementById("task-modal");
+  document.getElementById("task-title").value = task.title || '';
+  document.getElementById("task-desc").value = task.description || '';
+  document.getElementById("task-status").value = task.status || 'todo';
+  modal.dataset.currentTaskId = task.id; // Store the task ID
 
-  // Populate the fields using the globally defined references
-  taskDetailTitleInput.value = task.title;
-  taskDetailDescInput.value = task.description;
-  taskDetailStatusSelect.value = task.status;
-
-  // Set to view-only mode initially
-  toggleEditMode(false);
-  taskDetailModal.showModal();
+  modal.showModal();
 }
 
 /**
- * Handles saving changes made in the task detail modal to the API.
+ * Sets up modal close behavior for the task detail modal.
  */
-async function handleSaveTaskChanges() { // Mark as async
-    if (!currentTaskInModal) return; // Should not happen if modal was opened correctly
+function setupTaskModalCloseHandler() {
+  const modal = document.getElementById("task-modal");
+  const closeBtn = modal.querySelector(".close-btn");
 
-    const updatedTitle = taskDetailTitleInput.value.trim();
-    const updatedDescription = taskDetailDescInput.value.trim();
-    const updatedStatus = taskDetailStatusSelect.value;
+  if (closeBtn) {
+    closeBtn.addEventListener("click", () => {
+      modal.close();
+    });
+  } else {
+    console.error("Close button for task modal not found.");
+  }
 
-    if (!updatedTitle) {
-        alert('Task title cannot be empty. Please enter a title.');
+  // Event listener for saving changes
+  const saveTaskChangesBtn = document.getElementById("save-task-changes-btn");
+  if (saveTaskChangesBtn) {
+    saveTaskChangesBtn.addEventListener("click", async () => {
+      const taskId = modal.dataset.currentTaskId;
+      const updatedTitle = document.getElementById("task-title").value;
+      const updatedDescription = document.getElementById("task-desc").value;
+      const updatedStatus = document.getElementById("task-status").value;
+
+      if (!updatedTitle || !updatedStatus) {
+        alert("Please ensure the task title and status are not empty.");
         return;
-    }
+      }
 
-    // Create an object with the updated properties for the API call
-    const taskToUpdate = {
-        id: currentTaskInModal.id, // Ensure ID is part of the object for PUT request
+      const updatedTask = {
         title: updatedTitle,
         description: updatedDescription,
-        status: updatedStatus
-    };
+        status: updatedStatus,
+      };
 
-    // Call the API to update the specific task
-    const result = await updateTask(taskToUpdate); // Await the API call
+      try {
+        // Use the imported updateTask function
+        await updateTask(taskId, updatedTask);
+        console.log("Task updated successfully.");
+        modal.close();
+        fetchTasksAndRender(); // Re-render tasks to reflect changes
+      } catch (error) {
+        console.error("Error updating task:", error);
+        alert(`Could not update task: ${error.message}`);
+      }
+    });
+  } else {
+    console.error("Save Changes button not found.");
+  }
 
-    if (result) {
-        // If API update was successful, update the local tasks array
-        const taskIndex = tasks.findIndex(t => t.id === currentTaskInModal.id);
-        if (taskIndex > -1) {
-            tasks[taskIndex].title = updatedTitle;
-            tasks[taskIndex].description = updatedDescription;
-            tasks[taskIndex].status = updatedStatus;
+  // Event listener for deleting a task
+  const deleteTaskBtn = document.getElementById("delete-task-btn");
+  if (deleteTaskBtn) {
+    deleteTaskBtn.addEventListener("click", async () => {
+      const taskId = modal.dataset.currentTaskId;
+      if (confirm("Are you sure you want to delete this task?")) {
+        try {
+          // Use the imported deleteTask function
+          await deleteTask(taskId);
+          console.log("Task deleted successfully.");
+          modal.close();
+          fetchTasksAndRender(); // Re-render tasks to reflect deletion
+        } catch (error) {
+          console.error("Error deleting task:", error);
+          alert(`Could not delete task: ${error.message}`);
         }
-        renderTasks();    // Re-render the board to reflect changes (and move tasks)
-        taskDetailModal.close(); // Close modal after saving
-    } else {
-        alert("Failed to save task changes to the server. Please try again.");
-    }
-}
-
-/**
- * Sets up all event listeners related to the task detail modal (close, edit, save).
- */
-function setupTaskDetailModalHandlers() {
-  if (closeTaskDetailModalBtn) {
-    closeTaskDetailModalBtn.addEventListener("click", () => {
-      taskDetailModal.close();
+      }
     });
+  } else {
+    console.error("Delete Task button not found.");
   }
-
-  if (editTaskBtn) {
-      editTaskBtn.addEventListener('click', () => toggleEditMode(true));
-  }
-
-  // Listen for the form submission within the task detail modal
-  // This will be triggered when the "Save Changes" button (type="submit") is clicked
-  taskDetailModal.querySelector('#task-detail-form').addEventListener('submit', (event) => {
-    if (event.submitter && event.submitter.id === 'save-task-btn') {
-      event.preventDefault(); // Prevent default dialog close to handle logic first
-      handleSaveTaskChanges();
-    }
-  });
-}
-
-// --- New Task Modal Functionality ---
-
-/**
- * Opens the "Add New Task" modal and resets its form.
- */
-function openAddTaskModal() {
-    addTaskForm.reset(); // Clear any previously entered values
-    // Set default status if desired, e.g., to 'todo'
-    document.getElementById('add-task-status-select').value = 'todo';
-    addTaskModal.showModal();
 }
 
 /**
- * Handles the submission of the "Add New Task" form.
- * Creates a new task via API, adds it to the global tasks array, and re-renders the board.
- * @param {Event} event - The form submission event.
+ * Sets up the add task modal functionality.
  */
-async function handleAddTaskFormSubmit(event) { // Mark as async
-    event.preventDefault(); // Prevent the default form submission (which would reload the page)
+function setupAddTaskModal() {
+  const addTaskBtn = document.getElementById("add-task-btn");
+  const addTaskModal = document.getElementById("add-task-modal");
+  const closeAddTaskModalBtn = addTaskModal.querySelector(".close-btn");
+  const addTaskForm = document.getElementById("add-task-form");
 
-    // Get values from the form inputs using their unique IDs
-    const title = document.getElementById('add-task-title-input').value.trim();
-    const description = document.getElementById('add-task-description-input').value.trim();
-    const status = document.getElementById('add-task-status-select').value;
+  if (addTaskBtn) {
+    addTaskBtn.addEventListener("click", () => {
+      // Clear inputs when opening for a new task
+      addTaskForm.querySelector('#new-task-title').value = '';
+      addTaskForm.querySelector('#new-task-desc').value = '';
+      addTaskForm.querySelector('#new-task-status').value = 'todo';
 
-    // Basic validation
-    if (!title) {
-        alert('Task title cannot be empty. Please enter a title.');
+      addTaskModal.showModal();
+    });
+  } else {
+    console.error("Add Task button not found. Ensure it has the ID 'add-task-btn'.");
+  }
+
+  if (closeAddTaskModalBtn) {
+    closeAddTaskModalBtn.addEventListener("click", () => {
+      addTaskModal.close();
+    });
+  } else {
+    console.error("Close button for add task modal not found.");
+  }
+
+  const createTaskBtn = document.getElementById("create-task");
+  if (createTaskBtn) {
+    createTaskBtn.addEventListener('click', async (event) => {
+      event.preventDefault(); // Prevent default form submission that might close modal
+
+      const title = addTaskForm.querySelector('#new-task-title').value;
+      const description = addTaskForm.querySelector('#new-task-desc').value;
+      const status = addTaskForm.querySelector('#new-task-status').value;
+
+      if (!title || !status) {
+        alert("Please fill in at least the title and status for the new task.");
         return;
-    }
+      }
 
-    // Create task data object to send to API (API will assign the ID)
-    const newTaskData = { title, description, status };
+      const newTask = {
+        title,
+        description,
+        status
+      };
 
-    // Call the API to create the task
-    const createdTask = await createTask(newTaskData); // Await the API call
+      try {
+        // Use the imported createTask function
+        const addedTask = await createTask(newTask);
+        console.log("Task added successfully:", addedTask);
 
-    if (createdTask) {
-        tasks.push(createdTask); // Add the API-returned task (which now has an ID) to the local array
-        renderTasks();
+        fetchTasksAndRender();
         addTaskModal.close();
-    } else {
-        alert("Failed to create task on the server. Please check your API connection.");
-    }
-}
-
-/**
- * Sets up all event listeners related to the "Add New Task" modal.
- */
-function setupAddTaskModalHandlers() {
-    if (addTaskBtn) { // Check if the button exists before adding listener
-        addTaskBtn.addEventListener('click', openAddTaskModal);
-    }
-    if (closeAddTaskModalBtn) { // Check if the button exists
-        closeAddTaskModalBtn.addEventListener('click', () => addTaskModal.close());
-    }
-    if (addTaskForm) { // Check if the form exists
-        addTaskForm.addEventListener('submit', handleAddTaskFormSubmit);
-    }
-}
-
-const themeButton = document.getElementById('themeButton');
-
-const body = document.body;
-
-// Toggles the dark theme on the body and saves the preference to localStorage
-function toggleTheme() {
-  // Toggle the dark-theme class on the body
-  body.classList.toggle('dark-theme');
-  // Store the current theme in local storage for persistence
-  localStorage.setItem('theme', body.classList.contains('dark-theme') ? 'dark' : 'light');
-}
-
-// Event listener for the theme button
-themeButton.addEventListener('click', toggleTheme);
-
-// Check for saved theme on page load
-const savedTheme = localStorage.getItem('theme');
-if (savedTheme === 'dark') {
-
-  body.classList.add('dark-theme');
-}
-
-/**
- * Initializes the entire Kanban board application by fetching tasks from the API.
- * This is the main entry point after the DOM is loaded.
- */
-async function initApp() { // Mark as async
-    tasks = await fetchTasks(); // Fetch tasks from API
-
-    // If API returns no tasks, the board will simply be empty.
-    // The initialTasks fallback and saveTasks are no longer needed if API is the source of truth.
-    // if (tasks.length === 0) {
-    //     tasks = initialTasks;
-    //     saveTasks(tasks);
-    // }
-
-    renderTasks();
-    setupTaskDetailModalHandlers(); // Use the consolidated handler
-    setupAddTaskModalHandlers();
-
-    if (window.innerWidth <= 768) {
-        setupMobileMenu();
-    }
-
-    // Handle window resize
-    window.addEventListener('resize', () => {
-        if (window.innerWidth > 768) {
-      // Reset mobile menu state when resizing to desktop
-      document.querySelector('.mobile-overlay').classList.remove('active');
-      document.body.classList.remove('mobile-menu-open');
-      document.getElementById('side-bar-div').classList.remove('show-mobile');
-    }
+      } catch (error) {
+        console.error("Error adding task:", error);
+        alert(`Could not add task: ${error.message}`);
+      }
     });
-}
-
-// Attach the initApp function to the DOMContentLoaded event
-// This ensures all HTML elements are available before the script tries to interact with them.
-document.addEventListener("DOMContentLoaded", initApp);
-
-// Add these to your scripts.js file
-
-// DOM Elements
-const sidebar = document.getElementById('side-bar-div');
-const hideSidebarBtn = document.getElementById('hide-sidebar-btn');
-const showSidebarBtn = document.getElementById('show-sidebar-btn');
-const layout = document.getElementById('layout');
-// Mobile menu functionality
-const mobileLogo = document.getElementById('mobile-logo-toggle');
-const mobileOverlay = document.createElement('div');
-mobileOverlay.className = 'mobile-overlay';
-document.body.appendChild(mobileOverlay);
-
-
-
-// Event listeners
-hideSidebarBtn.addEventListener('click', () => toggleSidebar(false));
-showSidebarBtn.addEventListener('click', () => toggleSidebar(true));
-
-// Initialize sidebar state (optional - you could load from localStorage)
-const savedSidebarState = localStorage.getItem('sidebarVisible');
-if (savedSidebarState === 'false') {
-  toggleSidebar(false);
-} else if (window.innerWidth <= 768) {
-  // On mobile, start with sidebar hidden
-  toggleSidebar(false);
-}
-
-// Update localStorage when sidebar state changes
-hideSidebarBtn.addEventListener('click', () => {
-  localStorage.setItem('sidebarVisible', 'false');
-});
-
-showSidebarBtn.addEventListener('click', () => {
-  localStorage.setItem('sidebarVisible', 'true');
-});
-
-
-// Toggle sidebar visibility
-function toggleSidebar(show) {
-   const sidebar = document.getElementById('side-bar-div');
-  const showSidebarBtn = document.getElementById('show-sidebar-btn');
-  
-  if (show) {
-    sidebar.style.transform = 'translateX(0)';
-    document.body.classList.remove('sidebar-hidden');
-    showSidebarBtn.style.display = 'none';
-  } else {
-    sidebar.style.transform = 'translateX(-100%)';
-    document.body.classList.add('sidebar-hidden');
-    
-    // Only show the floating show button on desktop
-    if (window.innerWidth > 768) {
-      showSidebarBtn.style.display = 'flex';
-    }
   }
 }
 
-// Event listeners
-hideSidebarBtn.addEventListener('click', () => toggleSidebar(false));
-showSidebarBtn.addEventListener('click', () => toggleSidebar(true));
+/**
+ * Sets up the theme toggle functionality.
+ */
+function setupThemeToggle() {
+  const themeButton = document.querySelector('.theme-btn');
+  const body = document.body;
 
-
-if (savedSidebarState === 'false') {
-  toggleSidebar(false);
-}
-
-// Update localStorage when sidebar state changes
-hideSidebarBtn.addEventListener('click', () => {
-  localStorage.setItem('sidebarVisible', 'false');
-});
-
-showSidebarBtn.addEventListener('click', () => {
-  localStorage.setItem('sidebarVisible', 'true');
-});
-
-// Handle window resize to ensure proper sidebar behavior
-window.addEventListener('resize', () => {
-  if (window.innerWidth > 768) {
-    sidebar.style.display = 'flex';
-    sidebar.classList.remove('show-mobile');
-    mobileOverlay.classList.remove('active');
+  const currentTheme = localStorage.getItem('theme');
+  if (currentTheme) {
+    body.classList.add(currentTheme);
   } else {
-    if (!layout.classList.contains('sidebar-hidden')) {
-      sidebar.style.display = 'none';
-    }
+    body.classList.add('light-mode');
+    localStorage.setItem('theme', 'light-mode');
   }
-});
 
-// Mobile menu toggle functionality
-function setupMobileMenu() {
-  const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
-  const sidebar = document.getElementById('side-bar-div');
-  const mobileOverlay = document.createElement('div');
-  mobileOverlay.className = 'mobile-overlay';
-  document.body.appendChild(mobileOverlay);
-
-  mobileMenuToggle.addEventListener('click', () => {
-    sidebar.classList.toggle('show-mobile');
-    mobileOverlay.classList.toggle('active');
-    document.body.classList.toggle('mobile-menu-open');
-  });
-
-  mobileOverlay.addEventListener('click', () => {
-    sidebar.classList.remove('show-mobile');
-    mobileOverlay.classList.remove('active');
-    document.body.classList.remove('mobile-menu-open');
-  });
+  if (themeButton) {
+    themeButton.addEventListener('click', () => {
+      if (body.classList.contains('dark-mode')) {
+        body.classList.remove('dark-mode');
+        body.classList.add('light-mode');
+        localStorage.setItem('theme', 'light-mode');
+      } else {
+        body.classList.remove('light-mode');
+        body.classList.add('dark-mode');
+        localStorage.setItem('theme', 'dark-mode');
+      }
+    });
+  } else {
+    console.error("Theme button element not found. Ensure it has the class 'theme-btn'.");
+  }
 }
+
+/**
+ * Sets up the sidebar toggle functionality.
+ */
+function setupSidebarToggle() {
+    const sideBar = document.getElementById('side-bar-div');
+    const hideSidebarBtn = document.querySelector('.hide-sidebar-btn');
+    const showSidebarBtn = document.querySelector('.show-sidebar-btn');
+    const body = document.body;
+
+    const isSidebarHidden = localStorage.getItem('sidebarHidden') === 'true';
+    if (isSidebarHidden) {
+        body.classList.add('sidebar-hidden');
+        if (showSidebarBtn) {
+            showSidebarBtn.classList.add('visible');
+        }
+    }
+
+    if (hideSidebarBtn) {
+        hideSidebarBtn.addEventListener('click', () => {
+            body.classList.add('sidebar-hidden');
+            if (showSidebarBtn) {
+                showSidebarBtn.classList.add('visible');
+            }
+            localStorage.setItem('sidebarHidden', 'true');
+        });
+    } else {
+        console.error("Hide sidebar button not found. Ensure it has the class 'hide-sidebar-btn'.");
+    }
+
+    if (showSidebarBtn) {
+        showSidebarBtn.addEventListener('click', () => {
+            body.classList.remove('sidebar-hidden');
+            showSidebarBtn.classList.remove('visible');
+            localStorage.setItem('sidebarHidden', 'false');
+        });
+    } else {
+        console.error("Show sidebar button not found. Ensure it has the class 'show-sidebar-btn'.");
+    }
+}
+
+/**
+ * Fetches tasks from the API and renders them.
+ */
+async function fetchTasksAndRender() {
+  const loadingIndicator = document.getElementById('loading-indicator');
+  const mainContent = document.querySelector('main.card-column-main');
+  const errorDisplay = document.getElementById('error-message');
+
+  loadingIndicator.style.display = 'block'; // Show loading indicator
+  mainContent.style.display = 'none'; // Hide main content
+  errorDisplay.style.display = 'none'; // Hide error message
+
+  try {
+    // Use the imported getTasks function
+    const tasks = await getTasks();
+    renderTasks(tasks);
+
+    loadingIndicator.style.display = 'none'; // Hide loading indicator
+    mainContent.style.display = 'flex'; // Show main content
+  } catch (error) {
+    console.error("Failed to fetch tasks:", error);
+    loadingIndicator.style.display = 'none'; // Hide loading indicator
+    errorDisplay.textContent = `Error: ${error.message}`;
+    errorDisplay.style.display = 'block'; // Show error message
+  }
+}
+
+/**
+ * Initializes the task board, modals, theme, and sidebar handlers.
+ */
+function initTaskBoard() {
+  // Add loading indicator and error message elements if they don't already exist
+  let loadingIndicator = document.getElementById('loading-indicator');
+  let errorDisplay = document.getElementById('error-message');
+
+  if (!loadingIndicator) {
+      const layout = document.getElementById('layout'); // Assuming a 'layout' div wraps your content
+      if (layout) {
+          layout.insertAdjacentHTML('beforeend', `
+            <div id="loading-indicator" style="display:none; position:absolute; top:50%; left:50%; transform: translate(-50%, -50%);">Loading...</div>
+            <div id="error-message" style="display:none; color:red; position:absolute; top:50%; left:50%; transform: translate(-50%, -50%);"></div>
+          `);
+      } else {
+          // Fallback if no layout div (e.g., append to body)
+          document.body.insertAdjacentHTML('beforeend', `
+            <div id="loading-indicator" style="display:none; position:absolute; top:50%; left:50%; transform: translate(-50%, -50%);">Loading...</div>
+            <div id="error-message" style="display:none; color:red; position:absolute; top:50%; left:50%; transform: translate(-50%, -50%);"></div>
+          `);
+      }
+      loadingIndicator = document.getElementById('loading-indicator');
+      errorDisplay = document.getElementById('error-message');
+  }
+
+  fetchTasksAndRender(); // Fetch and render tasks from the API
+  setupTaskModalCloseHandler();
+  setupAddTaskModal();
+  setupThemeToggle();
+  setupSidebarToggle();
+}
+
+// Wait until DOM is fully loaded, then initialize everything
+document.addEventListener("DOMContentLoaded", initTaskBoard);
