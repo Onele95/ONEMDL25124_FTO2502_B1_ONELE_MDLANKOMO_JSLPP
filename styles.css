@@ -5,138 +5,190 @@
   box-sizing: border-box; /* Ensures padding and border are included in total element size */
 }
 
-:root/* ========================
-   Global & Root Variables
-======================== */
-* {
-  box-sizing: border-box; /* Ensures padding and border are included in total element size */
-}
-
 :root {
-  /* Light Theme Colors (Defaults) */
-  --color-bg-primary: #f4f7fa; /* Main page background */
-  --color-surface-primary: #ffffff; /* Card backgrounds, sidebar background, modal backgrounds */
-  --color-text-primary: #000112; /* Primary text color (headings, main content) */
-  --color-text-secondary: #828fa3; /* Secondary text color (descriptions, subtle elements) */
-  --color-border: #e4ebfa; /* Borders and dividers */
-  --color-shadow: rgba(54, 78, 126, 0.1015); /* Subtle shadow for card depth */
-
-  /* Common Colors (remain the same for both themes) */
-  --color-main-purple: #635fc7;
-  --color-main-purple-hover: #a8a4ff;
-  --color-red: #ea5555;
-  --color-red-hover: #ff9898;
-  --color-medium-grey: #828fa3; /* Often used for icons or specific elements not covered by text-secondary */
-
+  --primary-bg: #f4f7fa; /* Light background */
+  --secondary-bg: #ffffff; /* Card/sidebar background */
+  --text-color: #000112; /* Dark text */
+  --button-text-color: #ffffff;
+  --button-color: #635fc7;
+  --primary-font-color: #000000; /* This will be overridden by --text-color for most text */
+  --secondary-font-color: #828fa3;
+  --primary-box-shadow: 0px 4px 6px rgba(54, 78, 126, 0.1015); /* Subtle shadow for card depth */
   --sidebar-width: 300px; /* Sidebar fixed width */
-
-  /* Transition properties for smooth theme changes */
-  transition:
-    background-color 0.3s ease-in-out,
-    color 0.3s ease-in-out,
-    border-color 0.3s ease-in-out;
 }
 
-/* Dark Theme Overrides */
-body.dark-theme {
-  --color-bg-primary: #20212c;
-  --color-surface-primary: #2b2c37;
-  --color-text-primary: #ffffff;
-  --color-text-secondary: #828fa3; /* Can remain same or change slightly */
-  --color-border: #3e3f4e;
-  --color-shadow: rgba(0, 0, 0, 0.5); /* Darker shadow for dark theme */
+/* Dark mode specific variables */
+body.dark-mode {
+  --primary-bg: #20212c; /* Darker background */
+  --secondary-bg: #2b2c37; /* Darker card/sidebar background */
+  --text-color: #ffffff; /* Light text */
+  --primary-font-color: #ffffff; /* Ensure this is also updated for dark mode */
 }
 
-/* ================
-   Base Elements
-================ */
+/* Apply variables to your elements */
 body {
+  background-color: var(--primary-bg);
+  color: var(--text-color); /* Applies to default text */
   font-family: "Plus Jakarta Sans", sans-serif;
-  display: flex;
+  display: flex; /* Allow layout to span horizontally */
   flex-direction: row;
   width: 100%;
   min-height: 100vh;
   margin: 0;
-  background-color: var(--color-bg-primary); /* Use primary background variable */
-  color: var(--color-text-primary); /* Use primary text color variable */
-  font-size: 1rem;
-  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out; /* Smooth transition */
+  font-size: 1rem; /* Base font size for rem scaling */
+  /* Add transition for overall body changes for smoother theme toggle */
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* ================
    Sidebar Layout
 ================ */
 .side-bar {
-  width: 260px;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--secondary-bg);
+  border-right: 1px solid #e4ebfa; /* Light divider */
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width); /* Ensure it doesn't shrink below this */
   height: 100vh;
-  position: fixed;
-  top: 0;
-  left: 0;
-  transform: translateX(0);
-  transition: transform 0.3s ease;
-  z-index: 1000;
+  transition: width 0.3s ease, min-width 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+  overflow: hidden; /* Hide content when sidebar is narrow */
+}
+
+body.dark-mode .side-bar {
+  border-right-color: #3e3f4e; /* Darker border for dark mode sidebar */
 }
 
 #side-logo-div {
-  margin: 33px 113px 54px 34px;
+  margin: 33px 113px 54px 34px; /* Spacing around logo */
   display: flex;
   justify-content: flex-start;
 }
 
 #logo {
-  width: 100%;
+  width: 100%; /* Make logo responsive within container */
 }
 
 .boards-nav-links-div {
   display: flex;
   flex-direction: column;
-  color: var(--color-text-primary); /* Links text color */
+  color: var(--text-color); /* This will be white in dark mode */
 }
 
 #headline-sidepanel {
-  padding: 0 12px 0 50px;
+  padding: 0 12px 0 50px; /* Aligns section content from left and right */
+  color: var(--secondary-font-color); /* This color usually stays the same */
 }
 
 h4 {
-  color: var(--color-text-secondary); /* Heading color */
+  color: var(--secondary-font-color);
   font-size: 0.75rem;
-  letter-spacing: 0.125rem;
+  letter-spacing: 0.125rem; /* Makes heading more spaced */
 }
 
-.board-btn {
+.board-btn,
+.theme-btn {
   font-family: inherit;
   display: flex;
   align-items: center;
-  gap: 10px;
-  background-color: var(--color-main-purple); /* Specific button color */
-  color: white; /* Button text color */
+  gap: 10px; /* Space between icon and text */
+  background-color: var(--button-color);
+  color: var(--button-text-color);
   border: none;
-  border-radius: 0 100px 100px 0;
+  border-radius: 0 100px 100px 0; /* Pill shape only on right side */
   height: 48px;
   width: 276px;
   padding: 28px 12px 28px 50px;
   font-size: 0.9375rem;
   font-weight: bold;
   cursor: pointer;
-  overflow: hidden;
+  overflow: hidden; /* Prevents overflowed text/icons from showing */
+  margin-bottom: 10px; /* Spacing between buttons */
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
+
+/* Specific styling for the theme button */
+.theme-btn {
+  width: 90%; /* Adjust as needed for sidebar width */
+  text-align: left;
+  padding: 10px 15px; /* More standard padding for a toggle button */
+  border-radius: 5px; /* Less rounded corners for standard button look */
+  margin-left: auto;
+  margin-right: auto; /* Center it */
+}
+
+/* New: Sidebar Toggle Buttons */
+.sidebar-toggle-container {
+  padding: 0 10px 32px 10px; /* Padding for the hide button at the bottom */
+  margin-top: auto; /* Pushes it to the bottom of the flex container */
+}
+
+.hide-sidebar-btn {
+  width: 100%; /* Make it fill its container */
+  background: none; /* No background */
+  color: var(--secondary-font-color); /* Lighter text color */
+  font-weight: 600;
+  text-align: left;
+  padding: 10px 15px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: color 0.3s ease;
+}
+
+.hide-sidebar-btn:hover {
+  color: var(--text-color); /* Darker on hover */
+}
+
+.show-sidebar-btn {
+  position: fixed;
+  bottom: 32px;
+  left: -60px; /* Initially off-screen */
+  background-color: var(--button-color);
+  color: var(--button-text-color);
+  border: none;
+  border-radius: 0 50px 50px 0; /* Rounded on right */
+  padding: 10px 20px;
+  cursor: pointer;
+  z-index: 1000; /* Ensure it's above other content */
+  opacity: 0; /* Initially invisible */
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  font-size: 1.5rem; /* Larger for the icon */
+}
+
+.show-sidebar-btn.visible {
+  left: 0px; /* Slide into view */
+  opacity: 1; /* Fade in */
+}
+
+/* State when sidebar is hidden */
+body.sidebar-hidden .side-bar {
+  width: 0;
+  min-width: 0;
+  border-right: none; /* Hide border */
+  /* Optional: if you want it to slide completely out */
+  /* transform: translateX(-100%); */
+}
+
+/* Adjust main layout when sidebar is hidden */
+#layout {
+  /* No margin-left if sidebar is hidden, as body is flex container */
+  flex: 1; /* Allow layout to take full available space */
+}
+
 
 /* ===============
    Main Layout
 ================ */
 #layout {
-  flex: 1;
-  overflow-x: hidden;
+  flex: 1; /* Fills remaining space beside sidebar */
+  overflow-x: hidden; /* Prevent horizontal scroll */
   width: 100%;
-  margin-left: var(--sidebar-width); /* Space for sidebar */
-  transition: margin-left 0.3s ease-in-out;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-#layout.sidebar-hidden {
-    margin-left: 0;
 }
 
 /* ===============
@@ -146,15 +198,19 @@ header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: var(--color-surface-primary); /* Header background */
-  color: var(--color-text-primary); /* Header text color */
+  background-color: var(--secondary-bg); /* Header background also changes */
+  color: var(--text-color); /* Header text also changes */
   height: 96px;
   padding: 0 35px 0 30px;
-  border-bottom: 1px solid var(--color-border); /* Header border */
+  border-bottom: 1px solid #e4ebfa;
   width: 100%;
   font-size: 1.875rem;
   font-weight: 600;
-  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+body.dark-mode header {
+  border-bottom-color: #3e3f4e; /* Darker border for dark mode header */
 }
 
 .header-name-div {
@@ -163,7 +219,7 @@ header {
 }
 
 .logo-mobile {
-  display: none;
+  display: none; /* Hidden on desktop; shown on smaller screens */
 }
 
 /* ===============
@@ -174,15 +230,15 @@ header {
   flex-direction: column;
   padding-left: 35px;
   box-sizing: border-box;
-  background-color: var(--color-bg-primary); /* Column area background */
-  flex-grow: 1; /* Allow container to grow and fill space */
 }
 
 .card-column-main {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 304px));
-  gap: 8px;
-  padding-top: 24px; /* Space from header */
+  grid-template-columns: repeat(
+    3,
+    minmax(0, 304px)
+  ); /* 3 columns with min size */
+  gap: 8px; /* Space between columns */
 }
 
 .column-div {
@@ -190,33 +246,41 @@ header {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding: 12px; /* Padding within column div */
+  padding: 12px;
 }
 
 .column-head-div {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 10px; /* Space between dot and column title */
 }
 
 .columnHeader {
   font-size: 0.75rem;
   letter-spacing: 0.125rem;
-  color: var(--color-text-secondary); /* Column header text color */
+  color: var(--secondary-font-color); /* This color usually stays the same */
   margin: 0;
 }
 
-/* Status Dots (colors specific to status, not theme) */
+/* Status Dots */
 .dot {
   height: 15px;
   width: 15px;
-  border-radius: 50%;
+  border-radius: 50%; /* Make it circular */
   display: inline-block;
 }
 
-#todo-dot { background-color: #49c4e5; }
-#doing-dot { background-color: #8471f2; }
-#done-dot { background-color: #219c90; }
+#todo-dot {
+  background-color: #49c4e5;
+}
+
+#doing-dot {
+  background-color: #8471f2;
+}
+
+#done-dot {
+  background-color: #219c90;
+}
 
 /* ===============
    Task Cards
@@ -228,36 +292,24 @@ header {
 
 .task-div {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 15px;
+  align-items: center;
+  padding-left: 15px;
   width: 100%;
-  height: auto;
-  min-height: 60px;
-  background-color: var(--color-surface-primary); /* Task card background */
-  color: var(--color-text-primary); /* Task card text color */
+  height: 60px;
+  background-color: var(--secondary-bg); /* Task card background also changes */
+  color: var(--text-color); /* Task card text also changes */
   border-radius: 12px;
-  box-shadow: var(--color-shadow); /* Task card shadow */
-  cursor: pointer;
+  box-shadow: var(--primary-box-shadow);
+  cursor: pointer; /* Indicate it's clickable */
   margin-bottom: 20px;
   font-size: 0.9375rem;
   font-weight: bold;
-  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.task-div h3 {
-    font-size: 0.9375rem;
-    font-weight: bold;
-    margin: 0 0 5px 0;
-    color: var(--color-text-primary);
+body.dark-mode .task-div {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Darker shadow for dark mode cards */
 }
-
-.task-div p {
-    font-size: 0.75rem;
-    font-weight: normal;
-    color: var(--color-text-secondary); /* Task description color */
-}
-
 
 /* ===============
    Headings
@@ -270,20 +322,21 @@ h2 {
 /* ===============
    Modal Styles
 ================ */
+/* Remove default dialog styles */
 dialog {
+  position: fixed;
   border: none;
   padding: 0;
   margin: 0;
   background: none;
 }
 
-#task-modal::backdrop,
-#add-task-modal::backdrop {
+/* Style the modal box */
+#task-modal::backdrop {
   background: rgba(0, 0, 0, 0.3);
 }
 
-#task-modal,
-#add-task-modal {
+#task-modal, #add-task-modal {
   top: 40%;
   left: 50%;
   transform: translate(-50%, -40%);
@@ -291,13 +344,13 @@ dialog {
   width: 90%;
   max-width: 600px;
   padding: 24px;
-  background-color: var(--color-surface-primary); /* Modal background */
-  color: var(--color-text-primary); /* Modal text color */
+  background-color: var(--secondary-bg); /* Modal background changes with theme */
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+  color: var(--text-color); /* Modal text changes with theme */
+  transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Modal header */
+/* Header */
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -308,7 +361,6 @@ dialog {
 .modal-header h3 {
   margin: 0;
   font-size: 1.125rem;
-  color: var(--color-text-primary); /* Modal header text */
 }
 
 .close-btn {
@@ -317,9 +369,9 @@ dialog {
   font-size: 2.5rem;
   line-height: 1;
   cursor: pointer;
-  color: var(--color-red); /* Close button color */
+  color: #ea5555;
   transition: transform 0.2s ease-in-out, font-weight 0.2s ease-in-out;
-  transition-delay: 0.1s;
+  transition-delay: 0.1s; /* Delay before scaling */
 }
 
 .close-btn:hover {
@@ -331,14 +383,14 @@ dialog {
   outline: none;
 }
 
-/* Form elements within modals */
+/* Form elements */
 form label {
   display: block;
   font-weight: 600;
   font-size: 0.75em;
   margin-top: 12px;
   margin-bottom: 4px;
-  color: var(--color-text-secondary); /* Label text color */
+  color: var(--secondary-font-color); /* Label color usually static */
 }
 
 form input,
@@ -346,71 +398,38 @@ form textarea,
 form select {
   width: 100%;
   padding: 8px 10px;
-  border: 1px solid var(--color-border); /* Input border color */
+  border: 1px solid #828fa3;
   border-radius: 4px;
   font-family: inherit;
   font-size: 0.8125em;
   resize: vertical;
-  background-color: var(--color-surface-primary); /* Input background */
-  color: var(--color-text-primary); /* Input text color */
-  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out;
+  background-color: transparent; /* Allows modal background to show through */
+  color: var(--text-color); /* Input text color changes with theme */
+  transition: border-color 0.3s ease, color 0.3s ease;
 }
 
 form select {
-  appearance: none;
+  appearance: none; /* Remove native arrow */
   background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="%23828FA3" stroke-width="3" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>')
     no-repeat right 0.75rem center;
   background-size: 1.4rem;
   padding-right: 1rem;
 }
 
-/* Specific styling for the Create Task button */
-#create-task-btn {
-    background-color: var(--color-main-purple);
-    color: white;
-    border: none;
-    border-radius: 20px;
-    padding: 10px 20px;
-    font-size: 0.9375rem;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 20px;
-    width: auto;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    transition: background-color 0.2s ease;
-}
-
-#create-task-btn:hover {
-    background-color: var(--color-main-purple-hover);
-}
-
-/* Modal action buttons (Edit, Save, Delete) */
-.modal-action-btn {
-    background-color: var(--color-main-purple);
-    color: white;
-    border: none;
-    border-radius: 20px;
-    padding: 10px 20px;
-    font-size: 0.9375rem;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 20px;
-    transition: background-color 0.2s ease;
-    display: inline-block; /* Adjust if you want block or flex */
-}
-
-.modal-action-btn:hover {
-    background-color: var(--color-main-purple-hover);
-}
-
-.modal-action-btn.delete-btn {
-    background-color: var(--color-red);
-}
-
-.modal-action-btn.delete-btn:hover {
-    background-color: var(--color-red-hover);
+/* Styles for the "Add New Task" button inside the modal */
+#create-task {
+  background-color: var(--button-color);
+  color: var(--button-text-color);
+  border: none;
+  border-radius: 24px;
+  padding: 10px 18px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 0.9375rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-top: 20px;
+  width: 100%; /* Make it full width in the modal */
 }
 
 
@@ -421,11 +440,13 @@ form select {
 /******** Tablets ********/
 @media screen and (max-width: 1023px) {
   .side-bar {
-    transform: translateX(-100%);
+    display: none; /* Hide sidebar on tablets and smaller by default */
   }
 
-  .side-bar.show-mobile {
-    transform: translateX(0);
+  .side-bar.show-sidebar {
+    display: flex !important;
+    position: fixed; /* Overlay on top of page */
+    height: auto;
   }
 
   #side-logo-div {
@@ -453,7 +474,7 @@ form select {
   .container {
     padding: 0;
     width: 100%;
-    align-items: center;
+    align-items: center; /* Center columns on smaller screens */
   }
 
   .card-column-main {
@@ -492,20 +513,47 @@ form select {
     width: 100%;
   }
 
-    /* Make sure layout margin is 0 on mobile */
-    #layout {
-        margin-left: 0;
-    }
+  /* Adjust show/hide buttons for tablets */
+  .show-sidebar-btn {
+    bottom: 20px;
+    padding: 8px 15px;
+  }
 }
 
 /******** Mobile ********/
 @media screen and (max-width: 576px) {
   .card-column-main {
-    grid-template-columns: minmax(0, 380px); /* Stack columns in single column */
+    grid-template-columns: minmax(
+      0,
+      380px
+    ); /* Stack columns in single column */
   }
 
   .column-div {
     padding: 24px;
+  }
+
+  .add-task-btn {
+    padding: 8px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%; /* Makes it a perfect circle */
+  }
+
+  .full-text {
+    display: none;
+  }
+  
+  .mobile-icon {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+
+  .show-sidebar-btn {
+    bottom: 10px;
+    padding: 6px 12px;
+    font-size: 1.2rem;
   }
 }
 
@@ -516,7 +564,7 @@ form select {
 }
 
 .add-task-btn {
-  background-color: var(--color-main-purple);
+  background-color: #635fc7;
   color: white;
   border: none;
   border-radius: 24px;
@@ -529,680 +577,5 @@ form select {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 48px;
-}
-
-/* Tablet styles */
-@media screen and (max-width: 1023px) {
-  .add-task-btn {
-    padding: 10px 16px;
-    font-size: 0.875rem;
-  }
-}
-
-/* Mobile styles - show only + icon */
-@media screen and (max-width: 576px) {
-  .full-text {
-    display: none;
-  }
-
-  .mobile-icon {
-    display: block;
-    font-size: 1.2rem;
-    font-weight: bold;
-  }
-
-  .add-task-btn {
-    padding: 8px;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-  }
-}
-
-/* --- Theme Toggle Button Specific Styles --- */
-.theme-toggle-container {
-    padding: 12px 16px;
-    background-color: var(--color-bg-primary); /* Container's own background */
-    border-radius: 6px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    margin: 16px 0;
-    transition: background-color 0.3s ease-in-out;
-}
-
-.theme-toggle-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    /* We are relying on #theme-toggle-text for the color now */
-    font-size: 15px;
-    font-weight: 600;
-}
-
-#theme-toggle-text {
-  color: var(--color-text-secondary); /* Default color for the text inside the button */
-  transition: color 0.3s ease-in-out;
-}
-
-/* --- Sidebar Footer Controls --- */
-.sidebar-footer-controls {
-    margin-top: auto;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.sidebar-action-btn {
-    background: none;
-    border: none;
-    color: var(--color-text-secondary); /* Button text color */
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    padding: 10px 16px;
-    font-size: 15px;
-    font-weight: 600;
-    width: 100%;
-    text-align: left;
-    border-radius: 0 100px 100px 0;
-    transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.sidebar-action-btn:hover {
-    background-color: rgba(99, 95, 199, 0.1);
-    color: var(--color-main-purple);
-}
-
-/* Show Sidebar Button (outside the sidebar) */
-#show-sidebar-btn {
-    position: fixed;
-    bottom: 32px;
-    left: 0;
-    padding: 16px 24px;
-    border-radius: 0 100px 100px 0;
-    background-color: var(--color-main-purple);
-    color: white;
-    border: none;
-    cursor: pointer;
-    z-index: 99;
-    display: none; /* Controlled by JS */
-    transition: transform 0.3s ease-in-out, background-color 0.2s ease;
-}
-
-#show-sidebar-btn:hover {
-    background-color: var(--color-main-purple-hover);
-} {
-  /* Light Theme Colors (Defaults) */
-  --color-bg-primary: #f4f7fa; /* Main page background */
-  --color-surface-primary: #ffffff; /* Card backgrounds, sidebar background, modal backgrounds */
-  --color-text-primary: #000112; /* Primary text color (headings, main content) */
-  --color-text-secondary: #828fa3; /* Secondary text color (descriptions, subtle elements) */
-  --color-border: #e4ebfa; /* Borders and dividers */
-  --color-shadow: rgba(54, 78, 126, 0.1015); /* Subtle shadow for card depth */
-
-  /* Common Colors (remain the same for both themes) */
-  --color-main-purple: #635fc7;
-  --color-main-purple-hover: #a8a4ff;
-  --color-red: #ea5555;
-  --color-red-hover: #ff9898;
-  --color-medium-grey: #828fa3; /* Often used for icons or specific elements not covered by text-secondary */
-
-  --sidebar-width: 300px; /* Sidebar fixed width */
-
-  /* Transition properties for smooth theme changes */
-  transition:
-    background-color 0.3s ease-in-out,
-    color 0.3s ease-in-out,
-    border-color 0.3s ease-in-out;
-}
-
-/* Dark Theme Overrides */
-body.dark-theme {
-  --color-bg-primary: #20212c;
-  --color-surface-primary: #2b2c37;
-  --color-text-primary: #ffffff;
-  --color-text-secondary: #828fa3; /* Can remain same or change slightly */
-  --color-border: #3e3f4e;
-  --color-shadow: rgba(0, 0, 0, 0.5); /* Darker shadow for dark theme */
-}
-
-/* ================
-   Base Elements
-================ */
-body {
-  font-family: "Plus Jakarta Sans", sans-serif;
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  min-height: 100vh;
-  margin: 0;
-  background-color: var(--color-bg-primary); /* Use primary background variable */
-  color: var(--color-text-primary); /* Use primary text color variable */
-  font-size: 1rem;
-  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out; /* Smooth transition */
-}
-
-/* ================
-   Sidebar Layout
-================ */
-.side-bar {
-  display: flex;
-  flex-direction: column;
-  background-color: var(--color-surface-primary); /* Use surface color */
-  border-right: 1px solid var(--color-border); /* Use border color */
-  width: var(--sidebar-width);
-  height: 100vh;
-  position: fixed; /* Keep it fixed */
-  top: 0;
-  left: 0;
-  transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out, border-color 0.3s ease-in-out;
-  z-index: 100;
-}
-
-#side-logo-div {
-  margin: 33px 113px 54px 34px;
-  display: flex;
-  justify-content: flex-start;
-}
-
-#logo {
-  width: 100%;
-}
-
-.boards-nav-links-div {
-  display: flex;
-  flex-direction: column;
-  color: var(--color-text-primary); /* Links text color */
-}
-
-#headline-sidepanel {
-  padding: 0 12px 0 50px;
-}
-
-h4 {
-  color: var(--color-text-secondary); /* Heading color */
-  font-size: 0.75rem;
-  letter-spacing: 0.125rem;
-}
-
-.board-btn {
-  font-family: inherit;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background-color: var(--color-main-purple); /* Specific button color */
-  color: white; /* Button text color */
-  border: none;
-  border-radius: 0 100px 100px 0;
-  height: 48px;
-  width: 276px;
-  padding: 28px 12px 28px 50px;
-  font-size: 0.9375rem;
-  font-weight: bold;
-  cursor: pointer;
-  overflow: hidden;
-}
-
-/* ===============
-   Main Layout
-================ */
-#layout {
-  flex: 1;
-  overflow-x: hidden;
-  width: 100%;
-  margin-left: var(--sidebar-width); /* Space for sidebar */
-  transition: margin-left 0.3s ease-in-out;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-#layout.sidebar-hidden {
-    margin-left: 0;
-}
-
-/* ===============
-   Header Section
-================ */
-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: var(--color-surface-primary); /* Header background */
-  color: var(--color-text-primary); /* Header text color */
-  height: 96px;
-  padding: 0 35px 0 30px;
-  border-bottom: 1px solid var(--color-border); /* Header border */
-  width: 100%;
-  font-size: 1.875rem;
-  font-weight: 600;
-  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out;
-}
-
-.header-name-div {
-  display: flex;
-  align-items: center;
-}
-
-.logo-mobile {
-  display: none;
-}
-
-/* ===============
-   Board Columns
-================ */
-.container {
-  display: flex;
-  flex-direction: column;
-  padding-left: 35px;
-  box-sizing: border-box;
-  background-color: var(--color-bg-primary); /* Column area background */
-  flex-grow: 1; /* Allow container to grow and fill space */
-}
-
-.card-column-main {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 304px));
-  gap: 8px;
-  padding-top: 24px; /* Space from header */
-}
-
-.column-div {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 12px; /* Padding within column div */
-}
-
-.column-head-div {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.columnHeader {
-  font-size: 0.75rem;
-  letter-spacing: 0.125rem;
-  color: var(--color-text-secondary); /* Column header text color */
-  margin: 0;
-}
-
-/* Status Dots (colors specific to status, not theme) */
-.dot {
-  height: 15px;
-  width: 15px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
-#todo-dot { background-color: #49c4e5; }
-#doing-dot { background-color: #8471f2; }
-#done-dot { background-color: #219c90; }
-
-/* ===============
-   Task Cards
-================ */
-.tasks-container {
-  display: flex;
-  flex-direction: column;
-}
-
-.task-div {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 15px;
-  width: 100%;
-  height: auto;
-  min-height: 60px;
-  background-color: var(--color-surface-primary); /* Task card background */
-  color: var(--color-text-primary); /* Task card text color */
-  border-radius: 12px;
-  box-shadow: var(--color-shadow); /* Task card shadow */
-  cursor: pointer;
-  margin-bottom: 20px;
-  font-size: 0.9375rem;
-  font-weight: bold;
-  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-}
-
-.task-div h3 {
-    font-size: 0.9375rem;
-    font-weight: bold;
-    margin: 0 0 5px 0;
-    color: var(--color-text-primary);
-}
-
-.task-div p {
-    font-size: 0.75rem;
-    font-weight: normal;
-    color: var(--color-text-secondary); /* Task description color */
-}
-
-
-/* ===============
-   Headings
-================ */
-h2 {
-  font-size: 1.5rem;
-  margin: 0;
-}
-
-/* ===============
-   Modal Styles
-================ */
-dialog {
-  border: none;
-  padding: 0;
-  margin: 0;
-  background: none;
-}
-
-#task-modal::backdrop,
-#add-task-modal::backdrop {
-  background: rgba(0, 0, 0, 0.3);
-}
-
-#task-modal,
-#add-task-modal {
-  top: 40%;
-  left: 50%;
-  transform: translate(-50%, -40%);
-  border-radius: 8px;
-  width: 90%;
-  max-width: 600px;
-  padding: 24px;
-  background-color: var(--color-surface-primary); /* Modal background */
-  color: var(--color-text-primary); /* Modal text color */
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
-}
-
-/* Modal header */
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.modal-header h3 {
-  margin: 0;
-  font-size: 1.125rem;
-  color: var(--color-text-primary); /* Modal header text */
-}
-
-.close-btn {
-  background: none;
-}
-
-  /* Add these styles to your CSS file */
-#layout.sidebar-hidden {
-  margin-left: 0;
-}
-
-#show-sidebar-btn {
-  position: fixed;
-  bottom: 32px;
-  left: 0;
-  padding: 16px 24px;
-  border-radius: 0 100px 100px 0;
-  background-color: var(--color-main-purple);
-  color: white;
-  border: none;
-  cursor: pointer;
-  z-index: 99;
-  display: none;
-  transition: transform 0.3s ease-in-out, background-color 0.2s ease;
-}
-
-#show-sidebar-btn:hover {
-  background-color: var(--color-main-purple-hover);
-}
-
-#hide-sidebar-btn {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.sidebar-footer-controls {
-  margin-top: auto;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* Ensure this is in your CSS */
-#layout.sidebar-hidden {
-  margin-left: 0;
-}
-
-#show-sidebar-btn {
-  position: fixed;
-  bottom: 32px;
-  left: 0;
-  padding: 16px;
-  border-radius: 0 100px 100px 0;
-  background-color: var(--color-main-purple);
-  color: white;
-  border: none;
-  cursor: pointer;
-  z-index: 99;
-  display: none;
-  transition: transform 0.3s ease-in-out, background-color 0.2s ease;
-}
-
-#show-sidebar-btn:hover {
-  background-color: var(--color-main-purple-hover);
-}
-
-#hide-sidebar-btn {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--color-text-secondary);
-}
-
-.sidebar-footer-controls {
-  margin-top: auto;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* Add these styles to your CSS */
-.logo-mobile-container {
-  display: none; /* Hidden by default, shown only in mobile */
-  cursor: pointer;
-  padding: 8px;
-  margin-right: 12px;
-}
-
-.logo-mobile {
-  width: 30px;
-  height: 30px;
-}
-
-/* Mobile styles */
-@media screen and (max-width: 768px) {
-  .logo-mobile-container {
-    display: block;
-  }
-  
-  .side-bar {
-    width: 260px;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease-in-out;
-    z-index: 1000;
-  }
-  
-  .side-bar.show-mobile {
-    transform: translateX(0);
-  }
-  
-  /* Add overlay when mobile menu is open */
-  .mobile-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 999;
-  display: none;
-}
-  
-  .mobile-overlay.active {
-    display: block;
-  }
-}
-
-/* Add these media queries to your existing CSS */
-
-/* Mobile (up to 576px) */
-@media screen and (max-width: 576px) {
-  /* Stack columns vertically */
-  .card-column-main {
-    grid-template-columns: 1fr;
-    padding: 0 16px;
-  }
-  
-  /* Adjust header */
-  header {
-    height: 64px;
-    padding: 0 16px;
-  }
-  
-  .header-board-name {
-    font-size: 1.25rem;
-  }
-  
-  /* Make modals full-width */
-  #task-modal,
-  #add-task-modal {
-    width: 95%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-  
-  /* Adjust task cards */
-  .task-div {
-    padding: 12px;
-    margin-bottom: 12px;
-  }
-  
-  /* Hide full text in buttons, show icons only */
-  .full-text {
-    display: none;
-  }
-  
-  .mobile-icon {
-    display: inline;
-  }
-  
-  /* Adjust sidebar for mobile */
-  .side-bar {
-    width: 260px;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-  }
-  
-  .side-bar.show-mobile {
-    transform: translateX(0);
-  }
-}
-
-/* Tablet (577px - 768px) */
-@media screen and (min-width: 577px) and (max-width: 768px) {
-  /* Two-column layout */
-  .card-column-main {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  /* Adjust header */
-  header {
-    height: 80px;
-    padding: 0 24px;
-  }
-  
-  /* Show both icon and text in buttons */
-  .full-text {
-    display: inline;
-  }
-  
-  .mobile-icon {
-    display: none;
-  }
-  
-  /* Adjust sidebar */
-  .side-bar {
-    width: 260px;
-  }
-}
-
-/* Small Desktop (769px - 1024px) */
-@media screen and (min-width: 769px) and (max-width: 1024px) {
-  /* Three-column layout with smaller gaps */
-  .card-column-main {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-  }
-  
-  /* Adjust sidebar */
-  .side-bar {
-    width: 240px;
-  }
-}
-
-/* Mobile menu toggle button */
-.mobile-menu-toggle {
-  background: none;
-  border: none;
-  padding: 8px;
-  margin-right: 12px;
-  cursor: pointer;
-  display: none; /* Hidden by default on desktop */
-}
-
-@media screen and (max-width: 768px) {
-  .mobile-menu-toggle {
-    display: block;
-  }
-  
-  .header-logo-desktop {
-    display: none;
-  }
-}
-
-/* Mobile overlay for sidebar */
-.mobile-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 99;
-  display: none;
-}
-
-.mobile-overlay.active {
-  display: block;
-}
-
-/* Prevent body scrolling when mobile menu is open */
-body.mobile-menu-open {
-  overflow: hidden;
+  min-width: 48px; /* Ensure button has minimum size on mobile */
 }
