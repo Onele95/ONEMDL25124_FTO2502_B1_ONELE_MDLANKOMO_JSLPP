@@ -109,12 +109,56 @@ h4 {
 
 /* Specific styling for the theme button */
 .theme-btn {
-  width: 90%; /* Adjust as needed for sidebar width */
-  text-align: left;
-  padding: 10px 15px; /* More standard padding for a toggle button */
-  border-radius: 5px; /* Less rounded corners for standard button look */
-  margin-left: auto;
-  margin-right: auto; /* Center it */
+  position: relative;
+  width: 60px;
+  height: 30px;
+  border-radius: 15px;
+  border: none;
+  background-color:#635FC7;
+  cursor: pointer;
+  padding: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+  transition: background-color 0.3s;
+}
+
+.theme-btn::after {
+  content: '';
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: white;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.3s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.theme-btn.active {
+  background-color: #4CAF50;
+}
+
+.theme-btn.active::after {
+  transform: translateX(30px);
+}
+
+/* Optional: Add some text indicators */
+.theme-btn::before {
+  content: '☀️';
+  position: absolute;
+  left: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.theme-btn.active::before {
+  content: '🌙';
+  left: auto;
+  right: 5px;
 }
 
 /* New: Sidebar Toggle Buttons */
@@ -151,14 +195,14 @@ h4 {
   color: var(--button-text-color);
   border: none;
   border-radius: 0 50px 50px 0; /* Rounded on right */
-  padding: 10px 20px;
+  padding: 1px 10px;
   cursor: pointer;
   z-index: 1000; /* Ensure it's above other content */
   opacity: 0; /* Initially invisible */
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  font-size: 1.5rem; /* Larger for the icon */
+  font-size: 1rem; /* Larger for the icon */
 }
 
 .show-sidebar-btn.visible {
