@@ -34,3 +34,5 @@ A responsive Kanban task management web application that allows users to create,
 - **Build Tools**:
   - Native ES Modules for code organization
   - No additional build tools required (vanilla JS)
+
+https://onemdl25124-fto2502-b1.netlify.app/
