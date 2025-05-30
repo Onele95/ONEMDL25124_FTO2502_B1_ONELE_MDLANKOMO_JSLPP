@@ -227,6 +227,7 @@ function setupThemeToggle() {
 
   if (themeButton) {
     themeButton.addEventListener('click', () => {
+      themeButton.classList.toggle('active')
       if (body.classList.contains('dark-mode')) {
         body.classList.remove('dark-mode');
         body.classList.add('light-mode');
